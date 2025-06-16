@@ -161,6 +161,11 @@ public class CursorManager<S> {
     final String cursorField;
     final long cursorRecordCount;
 
+    LOGGER.info("pair: {}", pair);
+    LOGGER.info("streamOptional: {}", streamOptional);
+    LOGGER.info("stateOptional: {}", stateOptional);
+    LOGGER.info("TEST AirbyteStreamNameNamespacePair: {}", new AirbyteStreamNameNamespacePair("KEY", "VALUE"));
+
     // if cursor field is set in catalog.
     if (streamOptional.map(ConfiguredAirbyteStream::getCursorField).isPresent()) {
       cursorField = streamOptional
