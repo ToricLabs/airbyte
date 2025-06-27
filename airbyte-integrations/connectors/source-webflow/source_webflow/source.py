@@ -81,7 +81,7 @@ class CollectionSchema(WebflowStream):
         Returns a collection with full schema by collection_id
         """
 
-        path = f"collections/{self.collection_id}"
+        path = f"v2/collections/{self.collection_id}"
         return path
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -104,8 +104,9 @@ class CollectionSchema(WebflowStream):
 Is "{field_type}" defined in the mapping between Webflow and json schma ? """
                 self.logger.exception(msg)
 
-                # Don't eat the exception, raise it again as this needs to be fixed
-                raise e
+                if field["isRequired"]:
+                    # Don't eat the exception, raise it again as this needs to be fixed
+                    raise e
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """This API does not return any information to support pagination"""
@@ -134,7 +135,7 @@ class CollectionsList(WebflowStream):
         Returns a list which contains high-level information about each collection.
         """
 
-        path = f"sites/{self.site_id}/collections"
+        path = f"v2/sites/{self.site_id}/collections"
         return path
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -142,7 +143,7 @@ class CollectionsList(WebflowStream):
         This API returns a list containing json objects. So we can just yield each element from the list
         """
         response_json = response.json()
-        yield from response_json
+        yield from response_json["collections"]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """This API does not return any information to support pagination"""
@@ -273,7 +274,7 @@ class SourceWebflow(AbstractSource):
 
         # Loop over the list of records and create a dictionary with name as key, and _id as value
         for collection_obj in collections_records:
-            collection_name_to_id_dict[collection_obj["name"]] = collection_obj["_id"]
+            collection_name_to_id_dict[collection_obj["displayName"]] = collection_obj["id"]
 
         return collection_name_to_id_dict
 
