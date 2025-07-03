@@ -52,9 +52,7 @@
     </Appenders>
 
     <Loggers>
-        <Root level="${log-level}">
-            <AppenderRef ref="AllLogs"/>
-        </Root>
+        <Root level="OFF"/>
 
         <Logger name="org.eclipse.jetty" level="INFO" />
         <Logger name="com.github.dockerjava" level="INFO" />
