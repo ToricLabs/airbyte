@@ -23,6 +23,14 @@ application {
 }
 
 dependencies {
+    implementation 'org.postgresql:postgresql:42.7.2'
+
+    constraints {
+        implementation('org.postgresql:postgresql:42.7.2') {
+            because 'Force newer PostgreSQL JDBC version'
+        }
+    }
+
     implementation 'commons-codec:commons-codec:1.16.0'
     implementation 'io.debezium:debezium-embedded:2.4.0.Final'
     implementation 'io.debezium:debezium-connector-postgres:2.4.0.Final'
