@@ -14,7 +14,7 @@ application {
 }
 
 dependencies {
-    implementation 'mysql:mysql-connector-java:8.0.33'
+    implementation 'mysql:mysql-connector-java:8.2.0'
 
     testFixturesApi 'org.testcontainers:tidb:1.19.4'
 
