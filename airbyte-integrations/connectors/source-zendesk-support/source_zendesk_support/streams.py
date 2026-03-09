@@ -249,6 +249,7 @@ class IncrementalZendeskSupportStream(FullRefreshZendeskSupportStream):
     cursor_field = "updated_at"
     next_page_field = "next_page"
     prev_start_time = None
+    state_checkpoint_interval = 100
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         # try to save maximum value of a cursor field
@@ -491,6 +492,18 @@ class Tickets(SourceZendeskIncrementalExportStream):
         Figured out during experiments that the most recent time needed for request to be successful is 3 seconds before now.
         """
         return super().validate_start_time(requested_start_time, value=3)
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        # Zendesk defaults support_type_scope to "agent", which excludes AI-agent tickets.
+        # Setting it to "all" ensures both human-agent and AI-agent tickets are returned.
+        params["support_type_scope"] = "all"
+        return params
 
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
