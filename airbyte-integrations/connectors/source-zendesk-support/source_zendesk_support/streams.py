@@ -492,6 +492,18 @@ class Tickets(SourceZendeskIncrementalExportStream):
         """
         return super().validate_start_time(requested_start_time, value=3)
 
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        # Zendesk defaults support_type_scope to "agent", which excludes AI-agent tickets.
+        # Setting it to "all" ensures both human-agent and AI-agent tickets are returned.
+        params["support_type_scope"] = "all"
+        return params
+
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
     """
