@@ -127,6 +127,32 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
 
         project.plugins.apply('application')
 
+        // Transitive libraries the shipped connectors never exercise but that carry
+        // critical CVEs with no compatible fix release:
+        //  - Kafka Connect's REST server stack (jetty 9.4) arrives via connect-runtime,
+        //    pulled by debezium-embedded. The embedded engine never starts the REST
+        //    server; the only jetty reference reachable from it is RestServerConfig's
+        //    response-header validator, which returns before touching jetty when the
+        //    option is unset (always the case here).
+        //  - azure-core-http-netty comes with the CDK's azure-storage-blob and pins
+        //    netty 4.1.77; database sources never talk to Azure.
+        project.configurations.all {
+            exclude group: 'org.eclipse.jetty'
+            exclude group: 'com.azure', module: 'azure-core-http-netty'
+        }
+        // Apache MINA < 2.0.30 has critical deserialization CVEs. The CDK's sshd-mina
+        // 2.11 pins mina-core 2.0.23; sshd 2.20 moves to the patched 2.0.31.
+        project.dependencies.constraints {
+            ['sshd-mina', 'sshd-core', 'sshd-common'].each {
+                implementation("org.apache.sshd:${it}:2.20.0") {
+                    because 'patched mina-core; same 2.x API line as the CDK'
+                }
+            }
+            implementation('org.apache.mina:mina-core:2.0.31') {
+                because 'CVE-2024-52046, CVE-2026-41409, CVE-2026-41635, CVE-2026-47065'
+            }
+        }
+
         project.sourceSets {
             integrationTestJava {
                 java {
